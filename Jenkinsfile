@@ -20,15 +20,21 @@ pipeline {
             }
         }
         stage('SonarQube Analysis') {
-                    steps {
-                        script {
-                            withSonarQubeEnv('sonarqube') {
-        //                        sh "${tool('sonar-scanner')}/bin/sonar-scanner -Dsonar.projectKey=myProjectKey -Dsonar.projectName=myProjectName"
-                                sh 'mvn clean package sonar:sonar'
-                            }
-                        }
+            steps {
+                script {
+                    withSonarQubeEnv('sonarqube') {
+                        sh 'mvn sonar:sonar -Pcoverage'
                     }
                 }
+            }
+        }
+        stage("Quality Gate") {
+           steps {
+              timeout(time: 10, unit: 'MINUTES') {
+               waitForQualityGate abortPipeline: true
+             }
+           }
+         }
         stage('Deploy') {
                     steps {
                         echo 'Deployment successful!!!'
